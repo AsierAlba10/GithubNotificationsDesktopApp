@@ -113,10 +113,9 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                       return (
                                  <div className="loading-container">
                                             <div className="loading-animation">
-                                                       <i className="fas fa-circle-notch fa-spin"></i>
+                                                       <i className="fas fa-spinner fa-spin"></i>
                                             </div>
-                                            <p className="loading-text">Cargando notificaciones...</p>
-                                            <p className="loading-subtext">Conectando con GitHub...</p>
+                                            <p className="loading-text">Conectando con GitHub</p>
                                  </div>
                       );
            }
