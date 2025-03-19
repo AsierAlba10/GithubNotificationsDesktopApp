@@ -263,19 +263,34 @@ body {
 }
 
 .collapse-button i {
-           transition: transform 0.2s;
+           transition: transform 0.3s ease-out;
+}
+
+/* Corregir rotación del icono para asegurar animación en ambas direcciones */
+.collapse-button i.fa-chevron-up {
+           transform: rotate(0deg);
+}
+
+.collapse-button i.fa-chevron-down {
+           transform: rotate(180deg);
 }
 
 /* Estilos para la lista de notificaciones */
 .notifications-list {
            display: flex;
            flex-direction: column;
-           transition: max-height 0.3s ease-out;
+           max-height: 1000px;
+           /* Altura máxima suficiente para mostrar todas las notificaciones */
+           transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+           opacity: 1;
+           overflow: hidden;
 }
 
 .notifications-list.collapsed {
            max-height: 0;
+           opacity: 0;
            overflow: hidden;
+           transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
 }
 
 .notification-item {

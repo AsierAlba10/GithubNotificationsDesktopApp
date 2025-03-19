@@ -12,13 +12,38 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
            // Estado para drag and drop
            const [draggedRepo, setDraggedRepo] = useState(null);
            const [orderedRepos, setOrderedRepos] = useState([]);
+           // Añadir estado para mostrar notificaciones durante la animación
+           const [hiddenRepos, setHiddenRepos] = useState({});
 
            // Función para alternar el estado de colapso de un repositorio
            const toggleRepoCollapse = (repoId) => {
-                      setCollapsedRepos(prev => ({
-                                 ...prev,
-                                 [repoId]: !prev[repoId]
-                      }));
+                      const isCurrentlyCollapsed = collapsedRepos[repoId];
+
+                      if (isCurrentlyCollapsed) {
+                                 // Si estamos expandiendo, primero cambiar el estado de collapsed
+                                 setCollapsedRepos(prev => ({
+                                            ...prev,
+                                            [repoId]: false
+                                 }));
+                                 // Asegurarse de que el contenido sea visible durante la animación
+                                 setHiddenRepos(prev => ({
+                                            ...prev,
+                                            [repoId]: false
+                                 }));
+                      } else {
+                                 // Si estamos colapsando, primero actualizar collapsed para iniciar la animación
+                                 setCollapsedRepos(prev => ({
+                                            ...prev,
+                                            [repoId]: true
+                                 }));
+                                 // Esperar a que termine la animación antes de ocultar el contenido
+                                 setTimeout(() => {
+                                            setHiddenRepos(prev => ({
+                                                       ...prev,
+                                                       [repoId]: true
+                                            }));
+                                 }, 300); // Este valor debe coincidir con la duración de la transición CSS
+                      }
            };
 
            // Funciones para drag & drop
@@ -107,6 +132,13 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                       if (orderedRepos.length === 0) {
                                  setOrderedRepos(repoObjects.map(repo => repo.id));
                       }
+
+                      // Inicializar el estado hiddenRepos con los mismos valores que collapsedRepos
+                      const initialHiddenState = {};
+                      repoObjects.forEach(repo => {
+                                 initialHiddenState[repo.id] = !!collapsedRepos[repo.id];
+                      });
+                      setHiddenRepos(initialHiddenState);
            }, [notifications, repositories]);
 
            if (loading) {
@@ -273,7 +305,7 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
 
                                                                              {repo.notifications.length > 0 ? (
                                                                                         <div className={`notifications-list ${collapsedRepos[repo.id] ? 'collapsed' : ''}`}>
-                                                                                                   {!collapsedRepos[repo.id] && repo.notifications.map(notification => (
+                                                                                                   {!hiddenRepos[repo.id] && repo.notifications.map(notification => (
                                                                                                               <NotificationItem
                                                                                                                          key={notification.id}
                                                                                                                          notification={notification}
