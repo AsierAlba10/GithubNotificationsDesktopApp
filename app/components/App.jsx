@@ -20,11 +20,14 @@ const App = () => {
                                             console.log('Token encontrado:', token ? 'Sí' : 'No');
                                             if (token) {
                                                        setAuthenticated(true);
+                                                       // No establecemos loading a false aquí, sino que dejamos que fetchData() lo haga
                                                        fetchData();
+                                            } else {
+                                                       // Solo establecemos loading a false si no hay token
+                                                       setLoading(false);
                                             }
                                  } catch (err) {
                                             console.error('Error al comprobar autenticación:', err);
-                                 } finally {
                                             setLoading(false);
                                  }
                       };
@@ -148,11 +151,15 @@ const App = () => {
                       }
            };
 
-           if (loading && !authenticated) {
+           // Mostramos la pantalla de carga tanto si estamos autenticando como cargando datos
+           if (loading) {
                       return (
-                                 <div className="empty-state">
-                                            <i className="fas fa-spinner fa-spin"></i>
-                                            <p>Cargando...</p>
+                                 <div className="loading-container">
+                                            <div className="loading-animation">
+                                                       <i className="fas fa-circle-notch fa-spin"></i>
+                                            </div>
+                                            <p className="loading-text">Cargando la aplicación...</p>
+                                            <p className="loading-subtext">Conectando con GitHub...</p>
                                  </div>
                       );
            }

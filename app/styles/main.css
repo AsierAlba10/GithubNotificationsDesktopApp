@@ -337,23 +337,80 @@ body {
            color: #6a737d;
 }
 
+/* Estados vacíos y de carga */
 .empty-state {
            display: flex;
            flex-direction: column;
            align-items: center;
            justify-content: center;
            height: 100%;
-           color: #586069;
-           text-align: center;
            padding: 2rem;
+           text-align: center;
+           color: #586069;
 }
 
 .empty-state i {
            font-size: 3rem;
+           color: #c8d1d9;
            margin-bottom: 1rem;
-           color: var(--primary);
 }
 
+.empty-state p {
+           font-size: 1.1rem;
+           margin-bottom: 0.5rem;
+}
+
+.empty-state-subtitle {
+           font-size: 0.9rem;
+           color: #6a737d;
+}
+
+/* Nuevo indicador de carga */
+.loading-container {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           height: 100%;
+           padding: 2rem;
+           text-align: center;
+}
+
+.loading-animation {
+           margin-bottom: 1.5rem;
+}
+
+.loading-animation i {
+           font-size: 3.5rem;
+           color: var(--primary);
+           animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+.loading-text {
+           font-size: 1.2rem;
+           font-weight: 500;
+           color: #24292e;
+           margin-bottom: 0.5rem;
+}
+
+.loading-subtext {
+           font-size: 0.95rem;
+           color: #6a737d;
+}
+
+@keyframes pulse {
+           0% {
+                      opacity: 0.6;
+                      transform: scale(0.95);
+           }
+
+           100% {
+                      opacity: 1;
+                      transform: scale(1.05);
+           }
+}
+
+/* Estilos de búsqueda vacía */
 .empty-search-state {
            display: flex;
            flex-direction: column;
