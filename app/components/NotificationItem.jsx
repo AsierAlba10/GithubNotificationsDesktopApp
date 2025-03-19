@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const NotificationItem = ({ notification, onMarkAsRead }) => {
            const { id, subject, repository, updated_at, unread, reason } = notification;
            const [isMarkedAsRead, setIsMarkedAsRead] = useState(false);
+           const [isVisible, setIsVisible] = useState(true);
+           const notificationRef = useRef(null);
 
            // Función para formatear la fecha en formato local
            const formatDate = (dateString) => {
@@ -77,8 +79,24 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
 
                                  // Marcar como leída después de abrir
                                  if (unread) {
-                                            onMarkAsRead(id);
+                                            markAsRead();
                                  }
+                      }
+           };
+
+           // Función simple para marcar como leída
+           const markAsRead = () => {
+                      if (unread) {
+                                 // Marcar como leída visualmente 
+                                 setIsMarkedAsRead(true);
+
+                                 // Notificar al componente padre
+                                 onMarkAsRead(id);
+
+                                 // Ocultar la notificación después de un momento
+                                 setTimeout(() => {
+                                            setIsVisible(false);
+                                 }, 300);
                       }
            };
 
@@ -86,16 +104,17 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
            const markAsReadOnly = (e) => {
                       e.stopPropagation(); // Evitar que el evento se propague al item completo
                       if (unread) {
-                                 onMarkAsRead(id);
-                                 // Marcar como leída localmente y configurar el desvanecimiento
-                                 setIsMarkedAsRead(true);
-                                 // La notificación se desvanecerá gracias a la clase fade-out
+                                 markAsRead();
                       }
            };
 
+           if (!isVisible) {
+                      return null;
+           }
+
            if (isMarkedAsRead) {
                       return (
-                                 <div className="notification-item read fade-out">
+                                 <div ref={notificationRef} className="notification-item read">
                                             {getIcon()}
 
                                             <div className="notification-content">
@@ -104,7 +123,12 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
                                                        </div>
 
                                                        <div className="notification-meta">
-                                                                  • {getReasonText()}
+                                                                  <span className="notification-type">
+                                                                             {subject.type}
+                                                                  </span>
+                                                                  <span className="notification-reason">
+                                                                             • {getReasonText()}
+                                                                  </span>
                                                        </div>
 
                                                        <div className="notification-time">
@@ -120,7 +144,7 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
            }
 
            return (
-                      <div className={`notification-item ${unread ? 'unread' : 'read'} fade-in`} onClick={openLink}>
+                      <div ref={notificationRef} className={`notification-item ${unread ? 'unread' : 'read'}`} onClick={openLink}>
                                  {getIcon()}
 
                                  <div className="notification-content">

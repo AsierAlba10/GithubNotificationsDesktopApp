@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import NotificationItem from './NotificationItem';
 
 const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) => {
@@ -14,6 +14,34 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
            const [orderedRepos, setOrderedRepos] = useState([]);
            // Añadir estado para mostrar notificaciones durante la animación
            const [hiddenRepos, setHiddenRepos] = useState({});
+           // Estado para controlar cuántas notificaciones se muestran por repo
+           const [visibleNotifications, setVisibleNotifications] = useState({});
+           // Estado para rastrear notificaciones marcadas como leídas
+           const [markedAsReadIds, setMarkedAsReadIds] = useState(new Set());
+
+           // Refs para mantener valores actualizados en callbacks
+           const visibleNotificationsRef = useRef({});
+
+           // Actualizar la ref cuando cambia el estado
+           useEffect(() => {
+                      visibleNotificationsRef.current = visibleNotifications;
+           }, [visibleNotifications]);
+
+           // Número de notificaciones a mostrar inicialmente y en cada carga más
+           const INITIAL_NOTIFICATIONS_COUNT = 4;
+           const NOTIFICATIONS_INCREMENT = 5;
+
+           // Función para mostrar más notificaciones de un repo (5 más cada vez)
+           const showMoreNotifications = (repoId, total) => {
+                      const currentVisible = visibleNotificationsRef.current[repoId] || INITIAL_NOTIFICATIONS_COUNT;
+                      // Si mostrar 5 más excedería el total, muestra el total
+                      const newVisible = Math.min(currentVisible + NOTIFICATIONS_INCREMENT, total);
+
+                      setVisibleNotifications(prev => ({
+                                 ...prev,
+                                 [repoId]: newVisible
+                      }));
+           };
 
            // Función para alternar el estado de colapso de un repositorio
            const toggleRepoCollapse = (repoId) => {
@@ -95,6 +123,24 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                       });
            };
 
+           // Función para manejar cuando se marca una notificación como leída
+           const handleMarkAsRead = (notificationId) => {
+                      // Llamar a la función original
+                      onMarkAsRead(notificationId);
+
+                      // Añadir el ID a nuestro conjunto de notificaciones marcadas como leídas
+                      setMarkedAsReadIds(prev => {
+                                 const newSet = new Set(prev);
+                                 newSet.add(notificationId);
+                                 return newSet;
+                      });
+           };
+
+           // Filtrar las notificaciones para quitar las marcadas como leídas
+           const getFilteredNotifications = (repo) => {
+                      return repo.notifications.filter(n => !markedAsReadIds.has(n.id));
+           };
+
            // Unir los repositorios obtenidos con los de las notificaciones
            useEffect(() => {
                       // Crear un objeto con todos los repositorios de notificaciones
@@ -135,11 +181,54 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
 
                       // Inicializar el estado hiddenRepos con los mismos valores que collapsedRepos
                       const initialHiddenState = {};
+                      // Inicializar el estado visibleNotifications con el batch inicial para todos los repos
+                      const initialVisibleState = {};
+
                       repoObjects.forEach(repo => {
                                  initialHiddenState[repo.id] = !!collapsedRepos[repo.id];
+                                 initialVisibleState[repo.id] = INITIAL_NOTIFICATIONS_COUNT;
                       });
+
                       setHiddenRepos(initialHiddenState);
+
+                      // Preservar los valores de visibleNotifications para repos que ya existen
+                      setVisibleNotifications(prev => {
+                                 const newState = { ...initialVisibleState };
+
+                                 // Preservar valores anteriores si existen
+                                 Object.keys(prev).forEach(repoId => {
+                                            if (repoObjects.some(r => r.id.toString() === repoId.toString())) {
+                                                       newState[repoId] = prev[repoId];
+                                            }
+                                 });
+
+                                 return newState;
+                      });
            }, [notifications, repositories]);
+
+           // Efecto adicional para ajustar visibleNotifications cuando cambia el número de notificaciones
+           useEffect(() => {
+                      // Para cada repositorio, verificar si visibleNotifications debe ser ajustado
+                      if (allRepositories.length > 0) {
+                                 const updatedVisibleState = { ...visibleNotifications };
+                                 let hasChanges = false;
+
+                                 allRepositories.forEach(repo => {
+                                            const currentVisible = visibleNotifications[repo.id] || INITIAL_NOTIFICATIONS_COUNT;
+
+                                            // Solo ajustar hacia abajo si el numero visible es mayor que el total disponible
+                                            if (currentVisible > repo.notifications.length && repo.notifications.length > 0) {
+                                                       updatedVisibleState[repo.id] = Math.max(INITIAL_NOTIFICATIONS_COUNT, repo.notifications.length);
+                                                       hasChanges = true;
+                                            }
+                                 });
+
+                                 if (hasChanges) {
+                                            setVisibleNotifications(updatedVisibleState);
+                                 }
+                      }
+                      // Dependencia: notifications para que se ejecute cuando cambia el arreglo de notificaciones
+           }, [notifications]);
 
            if (loading) {
                       return (
@@ -258,68 +347,90 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                                             </div>
                                  ) : (
                                             <div className="repositories-list">
-                                                       {sortedRepos.map((repo) => (
-                                                                  <div
-                                                                             key={repo.id}
-                                                                             className={`repository-group ${repo.notifications.length > 0 ? 'has-notifications' : ''}`}
-                                                                             draggable="true"
-                                                                             onDragStart={(e) => handleDragStart(e, repo.id)}
-                                                                             onDragEnd={handleDragEnd}
-                                                                             onDragOver={(e) => handleDragOver(e, repo.id)}
-                                                                             onDragLeave={handleDragLeave}
-                                                                             onDrop={(e) => handleDrop(e, repo.id)}
-                                                                  >
-                                                                             <div className="repository-header">
-                                                                                        <div className="repo-title-container">
-                                                                                                   <i className="fas fa-bars drag-handle" title="Arrastrar para reordenar"></i>
-                                                                                                   {repo.notifications.length > 0 && (
-                                                                                                              <button
-                                                                                                                         className="collapse-button"
-                                                                                                                         onClick={() => toggleRepoCollapse(repo.id)}
-                                                                                                                         title={collapsedRepos[repo.id] ? "Expandir notificaciones" : "Colapsar notificaciones"}
-                                                                                                              >
-                                                                                                                         <i className={`fas fa-chevron-${collapsedRepos[repo.id] ? 'down' : 'up'}`}></i>
-                                                                                                              </button>
-                                                                                                   )}
-                                                                                                   <h2 className="repository-name">
-                                                                                                              <i className="fas fa-book"></i> {repo.name}
-                                                                                                              {repo.notifications.length > 0 && (
-                                                                                                                         <span className="notification-badge">{repo.notifications.length}</span>
-                                                                                                              )}
-                                                                                                   </h2>
-                                                                                        </div>
-                                                                                        <div className="repo-actions">
-                                                                                                   <a
-                                                                                                              href="#"
-                                                                                                              className="repo-link"
-                                                                                                              onClick={(e) => {
-                                                                                                                         e.preventDefault();
-                                                                                                                         window.electron.openExternal(`https://github.com/${repo.name}`);
-                                                                                                              }}
-                                                                                                              title="Abrir en GitHub"
-                                                                                                   >
-                                                                                                              <i className="fas fa-external-link-alt"></i>
-                                                                                                   </a>
-                                                                                        </div>
-                                                                             </div>
+                                                       {sortedRepos.map((repo) => {
+                                                                  const filteredNotifications = getFilteredNotifications(repo);
+                                                                  const visibleCount = visibleNotifications[repo.id] || INITIAL_NOTIFICATIONS_COUNT;
 
-                                                                             {repo.notifications.length > 0 ? (
-                                                                                        <div className={`notifications-list ${collapsedRepos[repo.id] ? 'collapsed' : ''}`}>
-                                                                                                   {!hiddenRepos[repo.id] && repo.notifications.map(notification => (
-                                                                                                              <NotificationItem
-                                                                                                                         key={notification.id}
-                                                                                                                         notification={notification}
-                                                                                                                         onMarkAsRead={onMarkAsRead}
-                                                                                                              />
-                                                                                                   ))}
+                                                                  return (
+                                                                             <div
+                                                                                        key={repo.id}
+                                                                                        className={`repository-group ${filteredNotifications.length > 0 ? 'has-notifications' : ''}`}
+                                                                                        draggable="true"
+                                                                                        onDragStart={(e) => handleDragStart(e, repo.id)}
+                                                                                        onDragEnd={handleDragEnd}
+                                                                                        onDragOver={(e) => handleDragOver(e, repo.id)}
+                                                                                        onDragLeave={handleDragLeave}
+                                                                                        onDrop={(e) => handleDrop(e, repo.id)}
+                                                                             >
+                                                                                        <div className="repository-header">
+                                                                                                   <div className="repo-title-container">
+                                                                                                              <i className="fas fa-bars drag-handle" title="Arrastrar para reordenar"></i>
+                                                                                                              {filteredNotifications.length > 0 && (
+                                                                                                                         <button
+                                                                                                                                    className="collapse-button"
+                                                                                                                                    onClick={() => toggleRepoCollapse(repo.id)}
+                                                                                                                                    title={collapsedRepos[repo.id] ? "Expandir notificaciones" : "Colapsar notificaciones"}
+                                                                                                                         >
+                                                                                                                                    <i className={`fas fa-chevron-${collapsedRepos[repo.id] ? 'down' : 'up'}`}></i>
+                                                                                                                         </button>
+                                                                                                              )}
+                                                                                                              <h2 className="repository-name">
+                                                                                                                         <i className="fas fa-book"></i> {repo.name}
+                                                                                                                         {filteredNotifications.length > 0 && (
+                                                                                                                                    <span className="notification-badge">{filteredNotifications.length}</span>
+                                                                                                                         )}
+                                                                                                              </h2>
+                                                                                                   </div>
+                                                                                                   <div className="repo-actions">
+                                                                                                              <a
+                                                                                                                         href="#"
+                                                                                                                         className="repo-link"
+                                                                                                                         onClick={(e) => {
+                                                                                                                                    e.preventDefault();
+                                                                                                                                    window.electron.openExternal(`https://github.com/${repo.name}`);
+                                                                                                                         }}
+                                                                                                                         title="Abrir en GitHub"
+                                                                                                              >
+                                                                                                                         <i className="fas fa-external-link-alt"></i>
+                                                                                                              </a>
+                                                                                                   </div>
                                                                                         </div>
-                                                                             ) : (
-                                                                                        <div className="empty-repo-state">
-                                                                                                   <p>No hay notificaciones pendientes para este repositorio.</p>
-                                                                                        </div>
-                                                                             )}
-                                                                  </div>
-                                                       ))}
+
+                                                                                        {filteredNotifications.length > 0 ? (
+                                                                                                   <div className={`notifications-list ${collapsedRepos[repo.id] ? 'collapsed' : ''}`}>
+                                                                                                              {!hiddenRepos[repo.id] && (
+                                                                                                                         <>
+                                                                                                                                    {filteredNotifications
+                                                                                                                                               .slice(0, visibleCount)
+                                                                                                                                               .map(notification => (
+                                                                                                                                                          <NotificationItem
+                                                                                                                                                                     key={notification.id}
+                                                                                                                                                                     notification={notification}
+                                                                                                                                                                     onMarkAsRead={handleMarkAsRead}
+                                                                                                                                                          />
+                                                                                                                                               ))}
+
+                                                                                                                                    {visibleCount < filteredNotifications.length && (
+                                                                                                                                               <div className="show-more-container">
+                                                                                                                                                          <button
+                                                                                                                                                                     className="show-more-button"
+                                                                                                                                                                     onClick={() => showMoreNotifications(repo.id, filteredNotifications.length)}
+                                                                                                                                                          >
+                                                                                                                                                                     Mostrar más
+                                                                                                                                                          </button>
+                                                                                                                                               </div>
+                                                                                                                                    )}
+                                                                                                                         </>
+                                                                                                              )}
+                                                                                                   </div>
+                                                                                        ) : (
+                                                                                                   <div className="empty-repo-state">
+                                                                                                              <p>No hay notificaciones pendientes para este repositorio.</p>
+                                                                                                   </div>
+                                                                                        )}
+                                                                             </div>
+                                                                  );
+                                                       })}
                                             </div>
                                  )}
                       </div>
