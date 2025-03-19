@@ -1,0 +1,684 @@
+/* Estilos generales */
+:root {
+           --primary: #0366d6;
+           --primary-hover: #0256b3;
+           --secondary: #24292e;
+           --background: #f6f8fa;
+           --text: #24292e;
+           --border: #e1e4e8;
+           --notification-unread: #f1f8ff;
+           --notification-read: #ffffff;
+           --hover: #f1f1f1;
+           --success: #2ea44f;
+           --danger: #cb2431;
+           --warning: #f1c40f;
+}
+
+* {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+           background-color: var(--background);
+           color: var(--text);
+           height: 100vh;
+}
+
+#app {
+           height: 100vh;
+           display: flex;
+           flex-direction: column;
+}
+
+.header {
+           background-color: var(--secondary);
+           color: white;
+           padding: 1rem;
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.header h1 {
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+           font-size: 1.2rem;
+}
+
+.header-actions {
+           display: flex;
+           gap: 0.5rem;
+}
+
+.main-content {
+           flex: 1;
+           overflow-y: auto;
+           padding: 0;
+}
+
+/* Estilos para la barra de herramientas */
+.notifications-toolbar {
+           background-color: white;
+           border-bottom: 1px solid var(--border);
+           padding: 0.75rem 1rem;
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           flex-wrap: wrap;
+           gap: 0.5rem;
+           position: sticky;
+           top: 0;
+           z-index: 10;
+}
+
+.search-container {
+           position: relative;
+           flex-grow: 1;
+           max-width: 400px;
+}
+
+.search-icon {
+           position: absolute;
+           left: 10px;
+           top: 50%;
+           transform: translateY(-50%);
+           color: #6a737d;
+}
+
+.search-input {
+           width: 100%;
+           padding: 0.5rem 2rem;
+           border: 1px solid var(--border);
+           border-radius: 4px;
+           font-size: 0.9rem;
+           background-color: var(--background);
+}
+
+.search-input:focus {
+           outline: none;
+           border-color: var(--primary);
+           box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.3);
+}
+
+.clear-search {
+           position: absolute;
+           right: 10px;
+           top: 50%;
+           transform: translateY(-50%);
+           border: none;
+           background: none;
+           color: #6a737d;
+           cursor: pointer;
+           font-size: 0.9rem;
+           padding: 0;
+}
+
+.filter-controls {
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+}
+
+.notification-count {
+           font-size: 0.85rem;
+           color: #6a737d;
+           margin-right: 0.5rem;
+}
+
+.filter-button {
+           background-color: white;
+           border: 1px solid var(--border);
+           border-radius: 4px;
+           padding: 0.4rem 0.7rem;
+           font-size: 0.85rem;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           gap: 0.3rem;
+           color: #586069;
+           transition: all 0.2s;
+}
+
+.filter-button:hover {
+           background-color: var(--hover);
+}
+
+.filter-button.active {
+           background-color: var(--primary);
+           color: white;
+           border-color: var(--primary);
+}
+
+/* Contenedor de repositorios */
+.repositories-list {
+           padding: 1rem;
+           display: flex;
+           flex-direction: column;
+           gap: 1.25rem;
+}
+
+.repository-group {
+           border: 1px solid var(--border);
+           border-radius: 8px;
+           background-color: white;
+           overflow: hidden;
+           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+           transition: box-shadow 0.3s;
+}
+
+.repository-group:hover {
+           box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.repository-group.has-notifications {
+           border-left: 3px solid var(--primary);
+}
+
+.repository-header {
+           background-color: #fafbfc;
+           padding: 0.75rem 1rem;
+           border-bottom: 1px solid var(--border);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+}
+
+.repository-name {
+           font-size: 1rem;
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+           color: #24292e;
+}
+
+.repository-name i {
+           color: var(--primary);
+}
+
+.notification-badge {
+           display: inline-flex;
+           align-items: center;
+           justify-content: center;
+           background-color: var(--primary);
+           color: white;
+           font-size: 0.75rem;
+           height: 1.25rem;
+           min-width: 1.25rem;
+           padding: 0 0.4rem;
+           border-radius: 1rem;
+           margin-left: 0.5rem;
+}
+
+.repo-link {
+           color: #6a737d;
+           font-size: 0.85rem;
+           transition: color 0.2s;
+           text-decoration: none;
+}
+
+.repo-link:hover {
+           color: var(--primary);
+}
+
+/* Estilos para los botones de acción del repositorio */
+.repo-actions {
+           display: flex;
+           align-items: center;
+           gap: 0.75rem;
+}
+
+/* Estilos para el botón de colapso */
+.collapse-button {
+           background: none;
+           border: none;
+           color: #6a737d;
+           cursor: pointer;
+           font-size: 0.85rem;
+           padding: 0.25rem;
+           border-radius: 3px;
+           transition: all 0.2s;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+}
+
+.collapse-button:hover {
+           color: var(--primary);
+           background-color: rgba(3, 102, 214, 0.1);
+}
+
+.collapse-button i {
+           transition: transform 0.2s;
+}
+
+/* Estilos para la lista de notificaciones */
+.notifications-list {
+           display: flex;
+           flex-direction: column;
+           transition: max-height 0.3s ease-out;
+}
+
+.notifications-list.collapsed {
+           max-height: 0;
+           overflow: hidden;
+}
+
+.notification-item {
+           border-bottom: 1px solid var(--border);
+           padding: 1rem;
+           display: flex;
+           gap: 1rem;
+           align-items: flex-start;
+           background-color: white;
+           transition: background-color 0.2s;
+           cursor: pointer;
+           position: relative;
+}
+
+.notification-item:last-child {
+           border-bottom: none;
+}
+
+.notification-item:hover {
+           background-color: var(--hover);
+}
+
+.notification-item.unread {
+           background-color: var(--notification-unread);
+}
+
+.notification-icon {
+           font-size: 1.2rem;
+           color: var(--primary);
+}
+
+.notification-content {
+           flex: 1;
+}
+
+.notification-title {
+           font-weight: 600;
+           margin-bottom: 0.3rem;
+           color: #24292e;
+           line-height: 1.4;
+}
+
+.notification-meta {
+           margin-bottom: 0.3rem;
+           font-size: 0.85rem;
+           color: #586069;
+           display: flex;
+           align-items: center;
+           gap: 0.25rem;
+}
+
+.notification-type {
+           display: inline-block;
+           padding: 0.15rem 0.35rem;
+           background-color: #f1f8ff;
+           border-radius: 4px;
+           color: var(--primary);
+           font-size: 0.7rem;
+           font-weight: 600;
+           text-transform: uppercase;
+}
+
+.notification-reason {
+           color: #6a737d;
+}
+
+.notification-time {
+           font-size: 0.8rem;
+           color: #6a737d;
+}
+
+.empty-state {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           height: 100%;
+           color: #586069;
+           text-align: center;
+           padding: 2rem;
+}
+
+.empty-state i {
+           font-size: 3rem;
+           margin-bottom: 1rem;
+           color: var(--primary);
+}
+
+.empty-search-state {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           color: #586069;
+           text-align: center;
+           padding: 3rem 1rem;
+}
+
+.empty-search-state i {
+           font-size: 2.5rem;
+           margin-bottom: 1rem;
+           color: #6a737d;
+}
+
+.empty-search-state button {
+           margin-top: 1rem;
+}
+
+.empty-repo-state {
+           padding: 1.5rem;
+           text-align: center;
+           color: #6a737d;
+           font-size: 0.9rem;
+}
+
+.button {
+           background-color: var(--primary);
+           color: white;
+           border: none;
+           border-radius: 4px;
+           padding: 0.5rem 1rem;
+           cursor: pointer;
+           font-size: 0.9rem;
+           transition: background-color 0.2s;
+           display: inline-flex;
+           align-items: center;
+           gap: 0.5rem;
+}
+
+.button:hover {
+           background-color: var(--primary-hover);
+}
+
+.button:disabled {
+           opacity: 0.7;
+           cursor: not-allowed;
+}
+
+.error-message {
+           background-color: #ffeef0;
+           border: 1px solid #fdb8c0;
+           border-radius: 4px;
+           padding: 1rem;
+           margin: 1rem;
+           color: var(--danger);
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+}
+
+.error-message button {
+           background-color: var(--danger);
+}
+
+.error-message button:hover {
+           background-color: #b92532;
+}
+
+.login-container {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           min-height: calc(100vh - 60px);
+           padding: 2rem;
+           background-color: var(--background);
+}
+
+.login-form {
+           width: 100%;
+           max-width: 500px;
+           background-color: white;
+           padding: 2rem;
+           border-radius: 8px;
+           box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.login-form h2 {
+           margin-bottom: 1.5rem;
+           color: var(--secondary);
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+}
+
+.login-info {
+           margin-bottom: 1.5rem;
+           color: #586069;
+           line-height: 1.5;
+}
+
+.instructions {
+           margin-bottom: 1.5rem;
+           padding-left: 1.5rem;
+           color: #24292e;
+           line-height: 1.6;
+}
+
+.instructions li {
+           margin-bottom: 0.75rem;
+}
+
+.instructions ul {
+           margin-top: 0.5rem;
+           margin-left: 1.5rem;
+           color: #586069;
+}
+
+.instructions a {
+           color: var(--primary);
+           text-decoration: none;
+}
+
+.instructions a:hover {
+           text-decoration: underline;
+}
+
+.form-group {
+           margin-bottom: 1.5rem;
+}
+
+.form-group label {
+           display: block;
+           margin-bottom: 0.5rem;
+           font-weight: 500;
+           color: #24292e;
+}
+
+.form-group input {
+           width: 100%;
+           padding: 0.75rem;
+           border: 1px solid var(--border);
+           border-radius: 4px;
+           font-size: 1rem;
+           background-color: var(--background);
+}
+
+.form-group input:focus {
+           outline: none;
+           border-color: var(--primary);
+           box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.3);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+           from {
+                      opacity: 0;
+           }
+
+           to {
+                      opacity: 1;
+           }
+}
+
+.fade-in {
+           animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes slideIn {
+           from {
+                      transform: translateY(10px);
+                      opacity: 0;
+           }
+
+           to {
+                      transform: translateY(0);
+                      opacity: 1;
+           }
+}
+
+.slide-in {
+           animation: slideIn 0.3s ease-out;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+           .header h1 {
+                      font-size: 1rem;
+           }
+
+           .notifications-toolbar {
+                      flex-direction: column;
+                      align-items: stretch;
+           }
+
+           .search-container {
+                      max-width: 100%;
+           }
+
+           .filter-controls {
+                      justify-content: space-between;
+           }
+
+           .notification-item {
+                      padding: 0.75rem;
+           }
+
+           .repository-name {
+                      font-size: 0.9rem;
+           }
+}
+
+/* Estilos para el botón de marcar como leída */
+.mark-read-button {
+           background-color: var(--primary);
+           color: white;
+           border: none;
+           border-radius: 50%;
+           width: 28px;
+           height: 28px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           cursor: pointer;
+           opacity: 0;
+           transition: opacity 0.2s, background-color 0.2s;
+           margin-left: 8px;
+           flex-shrink: 0;
+}
+
+.notification-item:hover .mark-read-button {
+           opacity: 1;
+}
+
+.mark-read-button:hover {
+           background-color: var(--success);
+}
+
+/* Estilos para el mensaje de confirmación */
+.read-confirmation {
+           color: var(--success);
+           font-size: 0.85rem;
+           display: flex;
+           align-items: center;
+           gap: 0.3rem;
+           animation: fadeInOut 2s ease-in-out;
+           margin-left: auto;
+}
+
+.read-confirmation i {
+           color: var(--success);
+}
+
+@keyframes fadeInOut {
+           0% {
+                      opacity: 0;
+           }
+
+           15% {
+                      opacity: 1;
+           }
+
+           85% {
+                      opacity: 1;
+           }
+
+           100% {
+                      opacity: 0;
+           }
+}
+
+.fade-out {
+           animation: fadeInOut 2s ease-in-out;
+}
+
+/* Estilo para el botón de texto "Marcar como leída" */
+.mark-read-text-button {
+           background-color: var(--primary);
+           color: white;
+           border: none;
+           border-radius: 4px;
+           padding: 0.4rem 0.8rem;
+           font-size: 0.85rem;
+           cursor: pointer;
+           opacity: 0;
+           transition: opacity 0.2s, background-color 0.2s;
+           margin-left: auto;
+           align-self: center;
+}
+
+.notification-item:hover .mark-read-text-button {
+           opacity: 1;
+}
+
+.mark-read-text-button:hover {
+           background-color: var(--success);
+}
+
+/* Ajustes para el fade-out de la notificación completa */
+.notification-item.fade-out {
+           animation: fadeOutItem 2s forwards;
+}
+
+@keyframes fadeOutItem {
+           0% {
+                      opacity: 1;
+                      max-height: 200px;
+                      padding: 1rem;
+                      margin-bottom: 0px;
+           }
+
+           70% {
+                      opacity: 0.5;
+                      max-height: 200px;
+                      padding: 1rem;
+                      margin-bottom: 0px;
+           }
+
+           100% {
+                      opacity: 0;
+                      max-height: 0;
+                      padding: 0;
+                      margin-bottom: -1px;
+                      border: none;
+           }
+}
