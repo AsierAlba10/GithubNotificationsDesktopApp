@@ -169,6 +169,7 @@ body {
            overflow: hidden;
            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
            transition: box-shadow 0.3s;
+           cursor: grab;
 }
 
 .repository-group:hover {
@@ -192,7 +193,6 @@ body {
 .repo-title-container {
            display: flex;
            align-items: center;
-           gap: 0.5rem;
 }
 
 .repository-name {
@@ -201,6 +201,7 @@ body {
            align-items: center;
            gap: 0.5rem;
            color: #24292e;
+           margin-left: 0.8rem;
 }
 
 .repository-name i {
@@ -253,6 +254,7 @@ body {
            align-items: center;
            justify-content: center;
            min-width: 1.5rem;
+           margin-left: 0.1rem;
 }
 
 .collapse-button:hover {
@@ -746,4 +748,70 @@ body {
                       margin-bottom: -1px;
                       border: none;
            }
+}
+
+/* Estilos para drag and drop */
+.repository-group {
+           border: 1px solid var(--border);
+           border-radius: 8px;
+           background-color: white;
+           overflow: hidden;
+           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+           transition: box-shadow 0.3s;
+           cursor: grab;
+}
+
+.repository-group:hover {
+           box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.repository-group.has-notifications {
+           border-left: 3px solid var(--primary);
+}
+
+/* Estilos para el elemento siendo arrastrado */
+.repository-group.dragging {
+           opacity: 0.7;
+           cursor: grabbing;
+           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+           transform: scale(1.02);
+           z-index: 10;
+}
+
+/* Estilos para el área donde se puede soltar */
+.repository-group.drag-over {
+           border: 2px dashed var(--primary);
+           background-color: rgba(3, 102, 214, 0.05);
+}
+
+/* Estilo para el ícono de arrastre */
+.drag-handle {
+           color: #6a737d;
+           margin-right: 0.3rem;
+           margin-left: 0;
+           cursor: grab;
+           font-size: 0.85rem;
+}
+
+.dragging .drag-handle {
+           cursor: grabbing;
+}
+
+/* Animación para el dropzone */
+@keyframes pulse-border {
+           0% {
+                      border-color: rgba(3, 102, 214, 0.5);
+           }
+
+           50% {
+                      border-color: rgba(3, 102, 214, 1);
+           }
+
+           100% {
+                      border-color: rgba(3, 102, 214, 0.5);
+           }
+}
+
+.repository-group.drag-over {
+           animation: pulse-border 1s infinite;
 }

@@ -9,6 +9,9 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
            const [allRepositories, setAllRepositories] = useState([]);
            // Añadir estado para mantener el seguimiento de repositorios colapsados
            const [collapsedRepos, setCollapsedRepos] = useState({});
+           // Estado para drag and drop
+           const [draggedRepo, setDraggedRepo] = useState(null);
+           const [orderedRepos, setOrderedRepos] = useState([]);
 
            // Función para alternar el estado de colapso de un repositorio
            const toggleRepoCollapse = (repoId) => {
@@ -16,6 +19,55 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                                  ...prev,
                                  [repoId]: !prev[repoId]
                       }));
+           };
+
+           // Funciones para drag & drop
+           const handleDragStart = (e, repoId) => {
+                      setDraggedRepo(repoId);
+                      e.dataTransfer.effectAllowed = 'move';
+                      // Añadir estilo al elemento arrastrado
+                      e.target.classList.add('dragging');
+           };
+
+           const handleDragEnd = (e) => {
+                      setDraggedRepo(null);
+                      // Quitar estilo al finalizar el arrastre
+                      e.target.classList.remove('dragging');
+           };
+
+           const handleDragOver = (e, repoId) => {
+                      e.preventDefault();
+                      if (draggedRepo === repoId) return;
+
+                      // Marcar la zona donde se puede soltar
+                      e.currentTarget.classList.add('drag-over');
+                      e.dataTransfer.dropEffect = 'move';
+           };
+
+           const handleDragLeave = (e) => {
+                      // Quitar marca cuando el elemento arrastrado sale de la zona
+                      e.currentTarget.classList.remove('drag-over');
+           };
+
+           const handleDrop = (e, targetRepoId) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.remove('drag-over');
+
+                      if (draggedRepo === targetRepoId) return;
+
+                      setOrderedRepos(prev => {
+                                 const newOrder = [...prev];
+                                 const draggedIndex = newOrder.findIndex(id => id === draggedRepo);
+                                 const targetIndex = newOrder.findIndex(id => id === targetRepoId);
+
+                                 if (draggedIndex !== -1 && targetIndex !== -1) {
+                                            // Reordenar: eliminar el elemento arrastrado y añadirlo en la posición target
+                                            newOrder.splice(draggedIndex, 1);
+                                            newOrder.splice(targetIndex, 0, draggedRepo);
+                                 }
+
+                                 return newOrder;
+                      });
            };
 
            // Unir los repositorios obtenidos con los de las notificaciones
@@ -50,6 +102,11 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                       });
 
                       setAllRepositories(repoObjects);
+
+                      // Establecer el orden inicial de los repositorios
+                      if (orderedRepos.length === 0) {
+                                 setOrderedRepos(repoObjects.map(repo => repo.id));
+                      }
            }, [notifications, repositories]);
 
            if (loading) {
@@ -73,18 +130,33 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                                  }
                                  // Si no hay filtro, mostrar todos o solo los que tienen notificaciones según el estado
                                  return showAllRepos || repo.notifications.length > 0;
-                      })
-                      .sort((a, b) => {
-                                 // Primero los que tienen notificaciones
-                                 if (a.notifications.length > 0 && b.notifications.length === 0) return -1;
-                                 if (a.notifications.length === 0 && b.notifications.length > 0) return 1;
-                                 // Luego ordenar por cantidad de notificaciones (descendente)
-                                 if (a.notifications.length !== b.notifications.length) {
-                                            return b.notifications.length - a.notifications.length;
-                                 }
-                                 // Finalmente ordenar por nombre
-                                 return a.name.localeCompare(b.name);
                       });
+
+           // Aplicar el orden personalizado a los repositorios filtrados
+           const sortedRepos = [...filteredRepos].sort((a, b) => {
+                      const aIndex = orderedRepos.indexOf(a.id);
+                      const bIndex = orderedRepos.indexOf(b.id);
+
+                      // Si ambos están en el orden personalizado, usar ese orden
+                      if (aIndex !== -1 && bIndex !== -1) {
+                                 return aIndex - bIndex;
+                      }
+
+                      // Si solo uno está en el orden personalizado, darle prioridad
+                      if (aIndex !== -1) return -1;
+                      if (bIndex !== -1) return 1;
+
+                      // Si ninguno está en el orden personalizado, usar el orden predeterminado
+                      // Primero los que tienen notificaciones
+                      if (a.notifications.length > 0 && b.notifications.length === 0) return -1;
+                      if (a.notifications.length === 0 && b.notifications.length > 0) return 1;
+                      // Luego ordenar por cantidad de notificaciones (descendente)
+                      if (a.notifications.length !== b.notifications.length) {
+                                 return b.notifications.length - a.notifications.length;
+                      }
+                      // Finalmente ordenar por nombre
+                      return a.name.localeCompare(b.name);
+           });
 
            // Si no hay repositorios con notificaciones, mostrar mensaje adecuado
            const reposWithNotifications = allRepositories.filter(r => r.notifications.length > 0);
@@ -155,10 +227,20 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                                             </div>
                                  ) : (
                                             <div className="repositories-list">
-                                                       {filteredRepos.map((repo) => (
-                                                                  <div key={repo.id} className={`repository-group ${repo.notifications.length > 0 ? 'has-notifications' : ''}`}>
+                                                       {sortedRepos.map((repo) => (
+                                                                  <div
+                                                                             key={repo.id}
+                                                                             className={`repository-group ${repo.notifications.length > 0 ? 'has-notifications' : ''}`}
+                                                                             draggable="true"
+                                                                             onDragStart={(e) => handleDragStart(e, repo.id)}
+                                                                             onDragEnd={handleDragEnd}
+                                                                             onDragOver={(e) => handleDragOver(e, repo.id)}
+                                                                             onDragLeave={handleDragLeave}
+                                                                             onDrop={(e) => handleDrop(e, repo.id)}
+                                                                  >
                                                                              <div className="repository-header">
                                                                                         <div className="repo-title-container">
+                                                                                                   <i className="fas fa-bars drag-handle" title="Arrastrar para reordenar"></i>
                                                                                                    {repo.notifications.length > 0 && (
                                                                                                               <button
                                                                                                                          className="collapse-button"
