@@ -158,13 +158,7 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                                                        {filteredRepos.map((repo) => (
                                                                   <div key={repo.id} className={`repository-group ${repo.notifications.length > 0 ? 'has-notifications' : ''}`}>
                                                                              <div className="repository-header">
-                                                                                        <h2 className="repository-name">
-                                                                                                   <i className="fas fa-book"></i> {repo.name}
-                                                                                                   {repo.notifications.length > 0 && (
-                                                                                                              <span className="notification-badge">{repo.notifications.length}</span>
-                                                                                                   )}
-                                                                                        </h2>
-                                                                                        <div className="repo-actions">
+                                                                                        <div className="repo-title-container">
                                                                                                    {repo.notifications.length > 0 && (
                                                                                                               <button
                                                                                                                          className="collapse-button"
@@ -174,6 +168,14 @@ const Notifications = ({ notifications, repositories, loading, onMarkAsRead }) =
                                                                                                                          <i className={`fas fa-chevron-${collapsedRepos[repo.id] ? 'down' : 'up'}`}></i>
                                                                                                               </button>
                                                                                                    )}
+                                                                                                   <h2 className="repository-name">
+                                                                                                              <i className="fas fa-book"></i> {repo.name}
+                                                                                                              {repo.notifications.length > 0 && (
+                                                                                                                         <span className="notification-badge">{repo.notifications.length}</span>
+                                                                                                              )}
+                                                                                                   </h2>
+                                                                                        </div>
+                                                                                        <div className="repo-actions">
                                                                                                    <a
                                                                                                               href="#"
                                                                                                               className="repo-link"

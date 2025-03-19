@@ -188,6 +188,13 @@ body {
            align-items: center;
 }
 
+/* Contenedor del título del repositorio y el botón de colapso */
+.repo-title-container {
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+}
+
 .repository-name {
            font-size: 1rem;
            display: flex;
@@ -245,6 +252,7 @@ body {
            display: flex;
            align-items: center;
            justify-content: center;
+           min-width: 1.5rem;
 }
 
 .collapse-button:hover {
