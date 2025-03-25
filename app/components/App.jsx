@@ -75,31 +75,12 @@ const App = () => {
     // Función para obtener tanto notificaciones como repositorios
     const fetchData = async () => {
         try {
-            // Indicamos que estamos cargando para el icono giratorio
             setLoading(true);
-
-            // Obtener notificaciones
-            console.log('Obteniendo notificaciones...');
             const newNotifications = await window.electron.github.getNotifications();
-            console.log('Notificaciones recibidas:', newNotifications.length);
             setNotifications(newNotifications);
 
-            // Obtener repositorios
-            console.log('Obteniendo repositorios...');
             const repos = await window.electron.github.getRepositories();
-            console.log('Repositorios recibidos:', repos.length);
             setRepositories(repos);
-
-            // Mostrar notificaciones del sistema para nuevas notificaciones
-            const previousIds = new Set(notifications.map(n => n.id));
-            const newItems = newNotifications.filter(n => !previousIds.has(n.id));
-
-            if (newItems.length > 0) {
-                window.electron.notifications.show({
-                    title: `${newItems.length} nueva${newItems.length > 1 ? 's' : ''} notificación${newItems.length > 1 ? 'es' : ''}`,
-                    body: newItems[0].repository.full_name + (newItems.length > 1 ? ` y ${newItems.length - 1} más` : '')
-                });
-            }
         } catch (err) {
             console.error('Error al obtener datos:', err);
             setError('No se pudieron cargar los datos. Por favor, verifica tu conexión.');
