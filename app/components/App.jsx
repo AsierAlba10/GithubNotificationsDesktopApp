@@ -109,8 +109,6 @@ const App = () => {
         }
     };
 
-    const fetchNotifications = () => fetchData();
-
     const handleLogin = async (token) => {
         try {
             console.log('Intentando guardar token...');
